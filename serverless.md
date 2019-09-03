@@ -1,59 +1,72 @@
-# Serverless Frameworkメモ
+# Serverless Framework
 
-## サービスの雛形を作成する
+## やりたいこと
 
-Node.jsのサーバレスサービスを新規開発する場合、以下のコマンドを実行する。
++ `git push` で自動デプロイする
++ 自動でなくてもローカルからコマンドでデプロイできるようにしたい
++ 開発したLambdaのテスト環境を開発者ごとに作成する、テストが終わったら作成したテスト環境を削除する
 
-```terminal
-serverless create --template aws-nodejs --path serverless-prj
+## Node.jsのサーバレスサービスの雛形を作成
+
+```
+serverless create --template aws-nodejs --path serviceName
 ```
 
-作成に成功すると `serverless-prj` フォルダが作られ、フォルダの中に `handler.js` と `serverless.yml` ができる。
-
-### `handler.js`
-
-エントリポイントになるNode.js。
-
-### `serverless.yml`
-
-Lambda, API Gateway, DynamoDBなどの設定を書くYAML。
++ 成功すると `serverless-service` ディレクトリが作られ、`handler.js`, `serverless.yml` ができる
++ `handler.js` にエントリポイントとなるLambdaを実装する
++ `serverless.yml` に使用するAWSサービスの設定を書く
 
 
-## Lambdaをローカルでテストする
+## ローカルでLambdaをテスト
 
-`serverless invoke` で `handler.js` のファンクションを実行できる。
-
-```terminal
-serverless invoke local --function function-name
+```
+serverless invoke local --function funcName
 ```
 
-`local` オプションを外すとデプロイされたLambdaを実行する。
++ Node.jsのファンクションのテストをする場合、テストコードなどファンクションを呼び出すJSファイルが必要になるので、コマンドでファンクションを呼び出せるのが便利
++ `local` オプションを外すとデプロイされたLambdaをテストできるので、管理コンソールからの動作テストは不要
 
 
-## ローカルでAPI Gateway+Lambda+DynamoDBの構成をテストする
+## ローカルでサービスをテストする
 
-デプロイする前に `serverless.yml` の設定でサービスをテストする場合、次のプラグインを `npm` でインストールし、`serverless.yml` に追加する。
+```
+serverless offline
+```
 
-### `serverless-offline`
-
-API Gatewayの代替になるWebサーバを起ち上げ、WebAPIからLambdaを呼び出す
-
-### `serverless-dynamodb-local`
-
-DynamoDB LocalをServerless Frameworkで使えるようにする。
++ デプロイ前に `serverless.yml` の設定をテストできる
++ Serverless Frameworkプラグインの `serverless-offline`, `serverless-dynamodb-local` を入れれば、API Gateway, DynamoDBもローカルで動かすことができる
 
 
 ## サービスをデプロイする
 
-`serverless.yml` の設定でサービスをデプロイする。
-
-`stage` オプションでデプロイする環境を指定できる。指定が無い場合、`serverless.yml` の `custom.defaultStage` の値を設定する。
-
-```terminal
-serverless deploy --stage production
 ```
+serverless deploy --stage prod
+```
+
++ `stage` オプションでデプロイの環境を指定できる
++ 指定がない場合、`serverless.yml` の `custom.defaultStage` の値を設定する
+
+## サービスを削除する
+
+```
+serverless remove --stage dev
+```
+
++ デプロイ済みのサービスを全削除するので定時後に定期実行できるといい
+
+
+## Lambdaのバージョンとエイリアス設定
+
++ `serverless-aws-alias` プラグインを使えばいける？
 
 ## 自動デプロイ
 
-CodeCommit + CodePipeline + CodeBuildで `git push` から自動デプロイできる。
-GitLabからCodePipelineを直接連携できないようなのでCodeCommitを間に挟む必要がある？
+### CodeCommit + CodePipeline + CodeBuild
+
++ CodeCommit + CodePipeline + CodeBuildを使用して `git push` をトリガーに自動デプロイできる
++ GitLabだとCodePipelineと直に連携できないので、CodeCommitを間に置いてミラーリングする必要がある？
+
+
+### GitLab Runner
+
++ `git push` をトリガーにGitLab Runnerから `serverless deploy` を実行する
