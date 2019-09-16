@@ -1,0 +1,14 @@
+[
+    {
+        "id": "1",
+        "checked": true,
+        "text": "\u30c6\u30b9\u30c8\u0031",
+        "created_at": 1532274721534
+    },
+    {
+        "id": "2",
+        "checked": true,
+        "text": "\u30c6\u30b9\u30c8\u0032",
+        "created_at": 1532274843309
+    }
+]
